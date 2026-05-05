@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UHE Corumbá III — Fase 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0c;--bg2:#131313;--bg3:#1a1a1a;--bg4:#212121;--bg5:#282828;
+  --border:#222;--border2:#2e2e2e;--border3:#3a3a3a;
+  --text:#ebe9e2;--text2:#777;--text3:#444;
+  --green:#22c55e;--green-bg:#071510;--green-mid:#0f2d1a;
+  --blue:#60a5fa;--blue-bg:#071525;--blue-dim:#0d1f3c;
+  --amber:#fbbf24;--amber-bg:#1a1200;--amber-dim:#2a1a05;
+  --red:#f87171;--red-bg:#1a0707;--red-dim:#2a0a0a;
+  --purple:#c084fc;--purple-bg:#140d1f;--purple-dim:#1e1535;
+}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── TOP TAB BAR ─── */
+.tab-bar{
+  display:flex;align-items:center;gap:0;
+  background:var(--bg2);border-bottom:1px solid var(--border2);
+  padding:0 24px;position:sticky;top:0;z-index:100;
+}
+.tab-bar-logo{
+  font-size:11px;font-family:'IBM Plex Mono',monospace;
+  color:var(--green);letter-spacing:.12em;text-transform:uppercase;
+  padding:16px 20px 16px 0;border-right:1px solid var(--border2);margin-right:16px;
+  white-space:nowrap;flex-shrink:0;
+}
+.tab-btn{
+  padding:16px 20px;font-size:12px;font-family:'Syne',sans-serif;
+  color:var(--text2);cursor:pointer;border:none;background:transparent;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .15s;letter-spacing:.02em;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+}
+.tab-btn:hover{color:var(--text);background:var(--bg3)}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--green)}
+.tab-icon{font-size:13px}
+.tab-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--text3);
+  flex-shrink:0;transition:background .15s;
+}
+.tab-btn.active .tab-dot{background:var(--green)}
+
+/* ─── PAGE WRAPPER ─── */
+.page{display:none;flex:1}
+.page.active{display:block}
+.inner{max-width:820px;margin:0 auto;padding:36px 24px}
+
+/* ════════════════════════════════════
+   SHARED COMPONENTS
+   ════════════════════════════════════ */
+.eyebrow{font-size:10px;letter-spacing:.15em;color:var(--green);text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:10px}
+h1{font-size:28px;font-weight:800;line-height:1.15;margin-bottom:6px}
+h1 span{color:var(--green)}
+.page-sub{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+.deadline-badge{background:var(--red-bg);border:1px solid #3d1010;border-radius:6px;padding:3px 10px;font-size:11px;color:var(--red);font-family:'IBM Plex Mono',monospace}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center}
+.stat-n{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
+.stat-l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+
+.warn{background:var(--amber-dim);border:1px solid #3d2a05;border-radius:10px;padding:12px 14px;font-size:13px;color:#d97706;margin-top:16px;line-height:1.6}
+.info-box{background:var(--green-bg);border:1px solid #0d3520;border-radius:10px;padding:12px 14px;font-size:13px;color:var(--green);margin:12px 0;line-height:1.6}
+
+/* ════════════════════════════════════
+   ABA 1 — TRILHA (inner nav)
+   ════════════════════════════════════ */
+.inner-nav{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap}
+.inner-btn{
+  padding:6px 14px;font-size:12px;border-radius:20px;
+  border:1px solid var(--border2);background:transparent;color:var(--text2);
+  cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;
+}
+.inner-btn:hover{border-color:var(--text2);color:var(--text)}
+.inner-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+.subpanel{display:none}
+.subpanel.active{display:block}
+
+/* Skill rows */
+.skill-rows{display:flex;flex-direction:column;gap:8px}
+.skill-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s}
+.skill-row:hover{background:var(--bg3);border-color:var(--border2)}
+.skill-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sk-green{background:var(--green-bg)}.sk-blue{background:var(--blue-dim)}.sk-amber{background:var(--amber-dim)}.sk-purple{background:var(--purple-dim)}
+.skill-info{flex:1}
+.skill-name{font-size:15px;font-weight:500}
+.skill-desc{font-size:12px;color:var(--text2);margin-top:3px}
+.skill-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.prio{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:500;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
+.prio-crit{background:var(--red-dim);color:var(--red);border:1px solid #3d1010}
+.prio-imp{background:var(--amber-dim);color:var(--amber);border:1px solid #3d2a05}
+.horas{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
+.bar-wrap{width:80px;height:3px;background:var(--bg4);border-radius:2px}
+.bar-fill{height:3px;border-radius:2px}
+
+/* Section blocks */
+.t-section{margin-bottom:28px}
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sec-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.num-green{background:var(--green-bg);color:var(--green);border:1px solid #0d3520}
+.num-blue{background:var(--blue-dim);color:var(--blue);border:1px solid #0d1f3c}
+.num-amber{background:var(--amber-dim);color:var(--amber);border:1px solid #3d2a05}
+.sec-title{font-size:15px;font-weight:500;flex:1}
+.sec-hours{font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.concept{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;border-left:3px solid var(--border)}
+.c-green{border-left-color:var(--green)}.c-blue{border-left-color:var(--blue)}.c-amber{border-left-color:var(--amber)}.c-purple{border-left-color:var(--purple)}
+.concept-title{font-size:13px;font-weight:500;margin-bottom:5px}
+.concept-why{font-size:12px;color:var(--text2);line-height:1.55}
+
+.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;margin:10px 0;overflow-x:auto;white-space:pre}
+.kw{color:var(--purple)}.cm{color:var(--green);font-style:italic}.str{color:var(--amber)}
+
+.resources{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.res{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);font-size:12px}
+.res-icon{font-size:14px;width:22px;text-align:center;flex-shrink:0}
+.res-tag{font-size:10px;padding:2px 7px;border-radius:5px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);white-space:nowrap;font-family:'IBM Plex Mono',monospace}
+
+/* Checklist interativo */
+.checklist-section{margin-bottom:20px}
+.cl-group-title{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;font-family:'IBM Plex Mono',monospace;margin-bottom:8px;padding-left:2px}
+.cl-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .1s;border:1px solid transparent}
+.cl-item:hover{background:var(--bg3);border-color:var(--border)}
+.cl-cb{width:17px;height:17px;border-radius:4px;border:1.5px solid var(--border3);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:9px}
+.cl-cb.done{background:var(--green);border-color:var(--green);color:#000}
+.cl-text{font-size:13px;line-height:1.5;flex:1}
+.cl-text.done{text-decoration:line-through;color:var(--text3)}
+.cl-tag{font-size:9px;padding:1px 6px;border-radius:5px;font-family:'IBM Plex Mono',monospace;flex-shrink:0;margin-top:2px}
+.tag-vba{background:var(--green-bg);color:var(--green);border:1px solid #0d3520}
+.tag-crit{background:var(--red-dim);color:var(--red);border:1px solid #3d1010}
+.tag-eng{background:var(--amber-dim);color:var(--amber);border:1px solid #3d2a05}
+
+.cl-progress{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px}
+.cl-prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-bottom:8px}
+.cl-prog-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.cl-prog-fill{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .3s}
+
+/* Sequence */
+.seq-steps{display:flex;flex-direction:column}
+.seq-step{display:flex;gap:0}
+.seq-left{display:flex;flex-direction:column;align-items:center;margin-right:16px}
+.seq-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;flex-shrink:0;z-index:1}
+.seq-line{width:1px;background:var(--border2);flex:1;margin:4px 0;min-height:20px}
+.seq-last .seq-line{display:none}
+.seq-content{padding-bottom:20px;flex:1}
+.seq-week{font-size:10px;color:var(--text2);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.seq-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.seq-desc{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* ════════════════════════════════════
+   ABA 3 — GRÁFICOS
+   ════════════════════════════════════ */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+.chart-card-wide{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:16px;font-family:'IBM Plex Mono',monospace}
+.chart-wrap{position:relative}
+canvas{width:100%!important}
+
+/* mini legend */
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+.leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.leg-ln{width:18px;height:2px;flex-shrink:0;border-radius:1px}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center}
+.kpi-n{font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
+.kpi-l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+.kpi-delta{font-size:10px;margin-top:3px;font-family:'IBM Plex Mono',monospace}
+.delta-ok{color:var(--green)}.delta-warn{color:var(--amber)}.delta-bad{color:var(--red)}
+.prog-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px}
+.prog-title{font-size:11px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace}
+.prog-track{height:6px;background:var(--bg4);border-radius:3px;margin-bottom:6px;overflow:hidden}
+.prog-fill-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.prog-markers{display:flex;justify-content:space-between;margin-top:6px}
+.marker{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;text-align:center;flex:1}
+.marker.today{color:var(--green)}
+
+.legend{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.leg-dot{width:8px;height:8px;border-radius:3px}
+
+.timeline{display:flex;flex-direction:column}
+.week{display:flex;position:relative}
+.week-left{width:110px;flex-shrink:0;padding-top:2px;padding-right:14px;text-align:right}
+.week-label{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;line-height:1.4}
+.week-dates{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.week-center{display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;z-index:1;border:2px solid var(--bg)}
+.tl-line{width:1px;background:var(--border2);flex:1;margin:4px 0}
+.last-week .tl-line{display:none}
+.week-right{flex:1;padding-bottom:22px;padding-left:14px}
+
+.card{border-radius:12px;border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+.card:last-child{margin-bottom:0}
+.card-study{background:var(--blue-bg);border-color:#0d1e38}
+.card-build{background:var(--green-bg);border-color:#0d2a16}
+.card-milestone{background:var(--amber-bg);border-color:#2e2000}
+.card-deadline{background:var(--red-bg);border-color:#3d1010}
+.card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.card-type{font-size:9px;padding:2px 8px;border-radius:5px;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;font-weight:500;text-transform:uppercase}
+.ct-study{background:#0d1e38;color:var(--blue);border:1px solid #112444}
+.ct-build{background:#0d2a16;color:var(--green);border:1px solid #0f3a1e}
+.ct-milestone{background:#2e2000;color:var(--amber);border:1px solid #3d2b00}
+.ct-deadline{background:#3d1010;color:var(--red);border:1px solid #521515}
+.card-date{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-left:auto}
+.card-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6}
+
+.c-checklist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.c-check{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--text2);line-height:1.5}
+.c-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tag{font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid var(--border2);color:var(--text3);font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+
+<!-- ═══════ TAB BAR ═══════ -->
+<div class="tab-bar">
+  <div class="tab-bar-logo">UHE Corumbá III</div>
+  <button class="tab-btn active" onclick="switchTab('trilha',this)">
+    <span class="tab-icon">📚</span> Trilha_Fase1 <span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('cronograma',this)">
+    <span class="tab-icon">📅</span> Cronograma <span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('graficos',this)">
+    <span class="tab-icon">📈</span> Gráficos <span class="tab-dot"></span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ABA 1 — TRILHA_FASE1
+     ═══════════════════════════════════════════════ -->
+<div class="page active" id="page-trilha">
+<div class="inner">
+
+  <div class="eyebrow">UHE Corumbá III — Sistema de Instrumentação</div>
+  <h1>Trilha <span>Fase 1</span></h1>
+  <div class="page-sub">Excel Inteligente · trilha técnica + checklist interativo</div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" style="color:var(--green)">~30h</div><div class="stat-l">Carga total</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--blue)">4</div><div class="stat-l">Blocos</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amber)">6</div><div class="stat-l">Semanas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--purple)">VBA</div><div class="stat-l">Foco</div></div>
+  </div>
+
+  <!-- inner nav -->
+  <div class="inner-nav">
+    <button class="inner-btn active" onclick="showSub('overview',this)">Visão geral</button>
+    <button class="inner-btn" onclick="showSub('checklist',this)">Checklist</button>
+    <button class="inner-btn" onclick="showSub('vba',this)">VBA &amp; UserForms</button>
+    <button class="inner-btn" onclick="showSub('excel',this)">Excel avançado</button>
+    <button class="inner-btn" onclick="showSub('seq',this)">Sequência</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="subpanel active" id="sub-overview">
+    <div class="skill-rows">
+      <div class="skill-row" onclick="showSub('vba',null)">
+        <div class="skill-icon sk-green">⚙</div>
+        <div class="skill-info"><div class="skill-name">VBA — Visual Basic for Applications</div><div class="skill-desc">UserForms, eventos, módulos, proteção, escrita no banco de dados</div></div>
+        <div class="skill-right"><span class="prio prio-crit">OBRIGATÓRIO</span><span class="horas">~25 horas</span><div class="bar-wrap"><div class="bar-fill" style="width:95%;background:var(--red)"></div></div></div>
+      </div>
+      <div class="skill-row" onclick="showSub('excel',null)">
+        <div class="skill-icon sk-blue">📊</div>
+        <div class="skill-info"><div class="skill-name">Excel avançado (tópicos específicos)</div><div class="skill-desc">Tabelas estruturadas, nomes definidos, proteção, gráficos dinâmicos</div></div>
+        <div class="skill-right"><span class="prio prio-crit">OBRIGATÓRIO</span><span class="horas">~10 horas</span><div class="bar-wrap"><div class="bar-fill" style="width:75%;background:var(--amber)"></div></div></div>
+      </div>
+      <div class="skill-row" onclick="showSub('seq',null)">
+        <div class="skill-icon sk-purple">🧩</div>
+        <div class="skill-info"><div class="skill-name">Lógica de fluxo do sistema</div><div class="skill-desc">Como amarrar login → pop-up → cálculo → banco → gráfico</div></div>
+        <div class="skill-right"><span class="prio prio-imp">IMPORTANTE</span><span class="horas">~3 horas</span><div class="bar-wrap"><div class="bar-fill" style="width:45%;background:var(--blue)"></div></div></div>
+      </div>
+    </div>
+    <div class="warn"><strong>Ponto crítico:</strong> 80% da Fase 1 é VBA puro. Comece por lá. Excel avançado vai ser revisão focada em poucos tópicos específicos.</div>
+  </div>
+
+  <!-- CHECKLIST INTERATIVO -->
+  <div class="subpanel" id="sub-checklist">
+    <div class="cl-progress">
+      <div class="cl-prog-label"><span>Progresso do checklist</span><span id="cl-pct">0 / 0 itens</span></div>
+      <div class="cl-prog-track"><div class="cl-prog-fill" id="cl-bar" style="width:0%"></div></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="cl-group-title">VBA — Fundamentos</div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Editor VBA (Alt+F11) — módulos, ThisWorkbook, planilhas</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sub, Function, Dim, If/Then/Else, For/Next, Do While</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Range("A1"), Cells(1,1) — leitura e escrita de células</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">WorksheetFunction.VLookup() — busca parâmetros pelo nome do instrumento</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">On Error GoTo — tratamento de erros sem crash para o leiturista</div><span class="cl-tag tag-vba">VBA</span></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="cl-group-title">VBA — UserForms (foco máximo)</div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Inserir UserForm (VBE → Insert → UserForm)</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Controles: TextBox, ComboBox, Label, CommandButton</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Evento UserForm_Initialize — carrega lista de instrumentos no ComboBox</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Evento CommandButton_Click — executa conversão e gravação</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">UserForm.Show / Unload Me — abrir e fechar o pop-up</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">IsNumeric() — validação de entrada do leiturista</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Lógica de dupla confirmação em Atenção/Alerta implementada</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="cl-group-title">VBA — Eventos e Proteção</div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Workbook_Open — chama UserForm de login ao abrir o arquivo</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Worksheet_Change + Application.EnableEvents — atualização automática de gráficos</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sheet.Protect / Unprotect — desprotege, grava, reprotege invisível</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">lastRow = Cells(Rows.Count,"A").End(xlUp).Row + 1</div><span class="cl-tag tag-vba">VBA</span></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="cl-group-title">Excel — Estrutura e Gráficos</div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Tabela estruturada (Ctrl+T) — TBL_BANCO e TBL_CONFIG criadas</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">ListObjects no VBA — adicionar linha na tabela pelo código</div><span class="cl-tag tag-vba">VBA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Named Ranges definidos para CONFIG e BANCO</div></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Gráfico de linha temporal vinculado à TBL_BANCO</div><span class="cl-tag tag-crit">CRÍTICO</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Linhas horizontais de Atenção e Alerta como séries extras no gráfico</div></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Formatação condicional — coluna Status em verde/amarelo/vermelho</div></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="cl-group-title">Entregas / Marcos</div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sáb 16/mai — Estrutura base: abas + CONFIG com 49 instrumentos</div><span class="cl-tag tag-crit">ENTREGA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sáb 23/mai — MVP: UserForm PE-BT-01 funcionando 100%</div><span class="cl-tag tag-crit">ENTREGA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sáb 30/mai — Gráficos automáticos + Login implementados</div><span class="cl-tag tag-crit">ENTREGA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sáb 06/jun — Expansão para todos os 49 instrumentos</div><span class="cl-tag tag-crit">ENTREGA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">Sáb 13/jun — Polimento final + documentação de uso</div><span class="cl-tag tag-crit">ENTREGA</span></div>
+      <div class="cl-item" onclick="toggleCl(this)"><div class="cl-cb">✓</div><div class="cl-text">15/jun — ENTREGA FINAL ao cliente Neoenergia O&amp;M</div><span class="cl-tag tag-crit">DEADLINE</span></div>
+    </div>
+  </div>
+
+  <!-- VBA -->
+  <div class="subpanel" id="sub-vba">
+    <div class="t-section">
+      <div class="sec-header"><div class="sec-num num-green">01</div><span class="sec-title">Fundamentos de VBA</span><span class="sec-hours">4–5 horas</span></div>
+      <div class="concept-grid">
+        <div class="concept c-green"><div class="concept-title">Editor VBA (Alt+F11)</div><div class="concept-why">Onde você escreve todo o código. Módulos, ThisWorkbook, planilhas específicas. Interface do ambiente de desenvolvimento.</div></div>
+        <div class="concept c-green"><div class="concept-title">Sub, Function, variáveis</div><div class="concept-why">Dim x As Long / String / Double. If/Then/Else, For/Next, Do While. Estrutura básica de qualquer macro.</div></div>
+        <div class="concept c-green"><div class="concept-title">Referência a células</div><div class="concept-why">Range("A1"), Cells(1,1), ActiveSheet, Worksheets("Base"). Leitura e escrita de valores nas planilhas.</div></div>
+        <div class="concept c-green"><div class="concept-title">MsgBox e InputBox</div><div class="concept-why">Diálogos simples. Base conceitual antes de partir para UserForms completos.</div></div>
+      </div>
+      <div class="code-block"><span class="cm">' Exemplo: lê leitura bruta, calcula cota piezométrica, escreve resultado</span>
+<span class="kw">Sub</span> TesteConversao()
+    <span class="kw">Dim</span> leitura  <span class="kw">As Double</span>
+    <span class="kw">Dim</span> cotaInst <span class="kw">As Double</span>
+    <span class="kw">Dim</span> CF       <span class="kw">As Double</span>
+
+    leitura  = Range(<span class="str">"B2"</span>).Value   <span class="cm">' dígitos do PE-BT-01</span>
+    cotaInst = 732.16              <span class="cm">' cota de instalação</span>
+    CF       = 0.1738              <span class="cm">' fator de calibração</span>
+
+    Range(<span class="str">"C2"</span>).Value = cotaInst + (leitura * CF) / 9.81
+    MsgBox <span class="str">"Cota calculada: "</span> &amp; Range(<span class="str">"C2"</span>).Value
+<span class="kw">End Sub</span></div>
+    </div>
+
+    <div class="t-section">
+      <div class="sec-header"><div class="sec-num num-green">02</div><span class="sec-title">UserForms — pop-up de lançamento</span><span class="sec-hours">8–10 horas ← FOCO</span></div>
+      <div class="info-box">UserForm é o componente mais crítico da Fase 1. É ele que cria o pop-up de login e o pop-up de lançamento. Dedique a maior parte do tempo aqui.</div>
+      <div class="concept-grid">
+        <div class="concept c-green"><div class="concept-title">Inserir UserForm (VBE → Insert)</div><div class="concept-why">Painel visual de design. Arrasta controles da Toolbox: TextBox, ComboBox, Label, CommandButton.</div></div>
+        <div class="concept c-green"><div class="concept-title">Controles essenciais</div><div class="concept-why">TextBox (digitação), ComboBox (lista suspensa de instrumentos), Label (título), CommandButton (OK / Cancelar).</div></div>
+        <div class="concept c-green"><div class="concept-title">Eventos do UserForm</div><div class="concept-why">UserForm_Initialize (carrega lista ao abrir), CommandButton_Click (executa a ação), TextBox_Change (valida em tempo real).</div></div>
+        <div class="concept c-green"><div class="concept-title">Mostrar e fechar</div><div class="concept-why">UserForm1.Show para abrir, Unload Me ou Me.Hide para fechar. Diferença entre modal (bloqueia) e modeless.</div></div>
+      </div>
+      <div class="code-block"><span class="cm">' Pop-up de lançamento — botão Confirmar</span>
+<span class="kw">Private Sub</span> btnConfirmar_Click()
+    <span class="kw">Dim</span> leituraBruta <span class="kw">As Double</span>
+    <span class="kw">Dim</span> instrumento  <span class="kw">As String</span>
+    <span class="kw">Dim</span> resultado    <span class="kw">As Double</span>
+
+    instrumento  = cmbInstrumento.Value
+    leituraBruta = CDbl(txtLeitura.Value)
+
+    <span class="kw">If Not</span> IsNumeric(txtLeitura.Value) <span class="kw">Then</span>
+        MsgBox <span class="str">"Digite um número válido."</span>, vbExclamation
+        <span class="kw">Exit Sub</span>
+    <span class="kw">End If</span>
+
+    resultado = ConverterLeitura(instrumento, leituraBruta)
+    Call GravarNoBanco(instrumento, leituraBruta, resultado)
+    Call ExibirStatus(instrumento, resultado)
+    Unload <span class="kw">Me</span>
+<span class="kw">End Sub</span></div>
+    </div>
+
+    <div class="t-section">
+      <div class="sec-header"><div class="sec-num num-green">03</div><span class="sec-title">Eventos de planilha e proteção</span><span class="sec-hours">3–4 horas</span></div>
+      <div class="concept-grid">
+        <div class="concept c-green"><div class="concept-title">Workbook_Open</div><div class="concept-why">Executa ao abrir o arquivo. Chama o UserForm de login automaticamente antes de liberar o acesso.</div></div>
+        <div class="concept c-green"><div class="concept-title">Worksheet_Change</div><div class="concept-why">Dispara quando uma célula muda. Atualiza gráficos automaticamente após cada gravação no banco.</div></div>
+        <div class="concept c-green"><div class="concept-title">Sheet.Protect / Unprotect</div><div class="concept-why">O código desprotege, grava o dado e protege novamente — tudo invisível. O leiturista nunca acessa células diretamente.</div></div>
+        <div class="concept c-green"><div class="concept-title">lastRow e VLookup</div><div class="concept-why">Cells(Rows.Count,"A").End(xlUp).Row+1 para próxima linha. WorksheetFunction.VLookup() para buscar CF e cota_inst da CONFIG.</div></div>
+      </div>
+    </div>
+
+    <div class="resources">
+      <div class="res"><span class="res-icon">▶</span><span style="flex:1"><strong>Excel Macro Mastery</strong> (Paul Kelly) — melhor canal de VBA em inglês, didática excepcional</span><span class="res-tag">YouTube EN</span></div>
+      <div class="res"><span class="res-icon">▶</span><span style="flex:1"><strong>Hashtag Treinamentos — VBA</strong> — conteúdo completo em português, muito prático</span><span class="res-tag">YouTube PT-BR</span></div>
+      <div class="res"><span class="res-icon">▶</span><span style="flex:1"><strong>WiseOwlTutorials — Excel VBA</strong> — série completa de UserForms, muito recomendado</span><span class="res-tag">YouTube EN</span></div>
+      <div class="res"><span class="res-icon">📖</span><span style="flex:1"><strong>Excel VBA Programming For Dummies</strong> — Michael Alexander. Leitura leve e prática</span><span class="res-tag">Livro</span></div>
+    </div>
+  </div>
+
+  <!-- EXCEL -->
+  <div class="subpanel" id="sub-excel">
+    <div class="t-section">
+      <div class="sec-header"><div class="sec-num num-blue">01</div><span class="sec-title">Tabelas estruturadas (ListObjects)</span><span class="sec-hours">2 horas</span></div>
+      <div class="info-box">O banco de dados PRECISA ser uma tabela estruturada (Ctrl+T). Ela cresce automaticamente quando novas linhas são adicionadas, e os gráficos vinculados atualizam sozinhos.</div>
+      <div class="concept-grid">
+        <div class="concept c-blue"><div class="concept-title">Criar tabela com Ctrl+T</div><div class="concept-why">Converte um range em tabela com nome. Novas linhas adicionadas pelo VBA entram na tabela e atualizam gráficos automaticamente.</div></div>
+        <div class="concept c-blue"><div class="concept-title">Referência estruturada</div><div class="concept-why">=TBL_BANCO[Valor_Convertido] ao invés de =B:B. Mais robusto quando a planilha cresce ou colunas mudam de posição.</div></div>
+        <div class="concept c-blue"><div class="concept-title">ListObjects no VBA</div><div class="concept-why">Worksheets("Base").ListObjects("TBL_BANCO").ListRows.Add — adiciona linha nova na tabela pelo código de forma limpa.</div></div>
+        <div class="concept c-blue"><div class="concept-title">Filtro automático</div><div class="concept-why">O engenheiro filtra por instrumento ou período direto na tabela. Sem precisar de VBA adicional para isso.</div></div>
+      </div>
+    </div>
+    <div class="t-section">
+      <div class="sec-header"><div class="sec-num num-blue">02</div><span class="sec-title">Gráficos dinâmicos vinculados à tabela</span><span class="sec-hours">3–4 horas</span></div>
+      <div class="concept-grid">
+        <div class="concept c-blue"><div class="concept-title">Gráfico de linha temporal</div><div class="concept-why">Eixo X = Data, Eixo Y = Cota Piezométrica. Vinculado à tabela: nova leitura → gráfico cresce automaticamente.</div></div>
+        <div class="concept c-blue"><div class="concept-title">Linha horizontal de controle</div><div class="concept-why">Série de dados constante = Cota de Atenção. Adicionada como 2ª série, formatada em laranja tracejado.</div></div>
+        <div class="concept c-blue"><div class="concept-title">Formatar gráfico via VBA</div><div class="concept-why">ActiveChart.SeriesCollection(1).Format.Line.ForeColor.RGB = RGB(200,0,0). Muda cor automaticamente em alerta.</div></div>
+        <div class="concept c-blue"><div class="concept-title">Chart.SetSourceData</div><div class="concept-why">Alterar a fonte de dados do gráfico pelo VBA quando trocar de instrumento na visualização.</div></div>
+      </div>
+    </div>
+    <div class="warn"><strong>O que NÃO precisa estudar agora:</strong> Power Query, Power Pivot, LAMBDA, fórmulas matriciais. Quem processa é o VBA — o Excel serve como interface, banco e visualização.</div>
+  </div>
+
+  <!-- SEQUÊNCIA -->
+  <div class="subpanel" id="sub-seq">
+    <div class="info-box">Sequência para quem começa do zero. Cada semana entrega algo funcional — você não precisa saber tudo antes de construir.</div>
+    <div class="seq-steps">
+      <div class="seq-step"><div class="seq-left"><div class="seq-dot" style="background:var(--green-bg);color:var(--green);border:1px solid #0d3520">01</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 1 · Seg 05 + Ter 06</div><div class="seq-title">VBA básico — Subs, ranges, loops, If/Then</div><div class="seq-desc">Macro que lê leitura bruta de B2, aplica fórmula PE-BT-01 e escreve em C2. Cobre toda a lógica de conversão do projeto.</div></div></div>
+      <div class="seq-step"><div class="seq-left"><div class="seq-dot" style="background:var(--green-bg);color:var(--green);border:1px solid #0d3520">02</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 2 · Seg 12 + Ter 14 → BUILD Sáb 16</div><div class="seq-title">Tabela CONFIG + VLOOKUP no VBA + Estrutura base</div><div class="seq-desc">Função VBA que dado o nome do instrumento retorna CF, TCF e cota_inst. Entrega: aba CONFIG com 49 instrumentos e estrutura de abas completa.</div></div></div>
+      <div class="seq-step"><div class="seq-left"><div class="seq-dot" style="background:var(--blue-dim);color:var(--blue);border:1px solid #0d1f3c">03</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 3 · Seg 19 + Ter 20 → MVP Sáb 23</div><div class="seq-title">Primeiro UserForm — pop-up de lançamento</div><div class="seq-desc">ComboBox + TextBox + botão Confirmar que converte e grava. Entrega: PE-BT-01 funcionando 100% com dados reais do CBAM.</div></div></div>
+      <div class="seq-step"><div class="seq-left"><div class="seq-dot" style="background:var(--blue-dim);color:var(--blue);border:1px solid #0d1f3c">04</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 4 · Seg 25 + Ter 26 + Sex 29 → BUILD Sáb 30</div><div class="seq-title">Gráficos automáticos + Login</div><div class="seq-desc">Gráfico com Worksheet_Change. UserForm de login no Workbook_Open. Fluxo completo testado.</div></div></div>
+      <div class="seq-step"><div class="seq-left"><div class="seq-dot" style="background:var(--amber-dim);color:var(--amber);border:1px solid #3d2a05">05</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 5 · Sex 05/jun → BUILD Sáb 06</div><div class="seq-title">Expansão para 49 instrumentos</div><div class="seq-desc">Funções ConverterPE(), ConverterPZ(), ConverterPMV(). Gráficos agrupados por seção. Testes de aceitação com dados reais.</div></div></div>
+      <div class="seq-step seq-last"><div class="seq-left"><div class="seq-dot" style="background:var(--purple-dim);color:var(--purple);border:1px solid #2a1f4d">06</div><div class="seq-line"></div></div><div class="seq-content"><div class="seq-week">Semana 6 · Sex 12/jun → POLIMENTO Sáb 13 → ENTREGA 15</div><div class="seq-title">Polimento + documentação + entrega</div><div class="seq-desc">Interface amigável, mini-manual, comentários no VBA, aba de versão. Arquivo testado em máquina limpa e enviado ao cliente.</div></div></div>
+    </div>
+    <div class="warn"><strong>Regra de ouro:</strong> 1 instrumento funcionando 100% antes de escalar para 49. Um PE-BT-01 perfeito vale mais do que 49 com bugs.</div>
+  </div>
+
+</div><!-- /inner -->
+</div><!-- /page-trilha -->
+
+
+<!-- ═══════════════════════════════════════════════
+     ABA 2 — CRONOGRAMA
+     ═══════════════════════════════════════════════ -->
+<div class="page" id="page-cronograma">
+<div class="inner">
+
+  <div class="eyebrow">Sistema de Instrumentação · Fase 1</div>
+  <h1>Cronograma <span>Corumbá III</span></h1>
+  <div class="page-sub">
+    <span>4 mai → 15 jun 2026 · 42 dias</span>
+    <span class="deadline-badge">DEADLINE 15/06/2026</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" style="color:var(--blue)">6</div><div class="stat-l">Semanas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">5</div><div class="stat-l">Entregas internas</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amber)">~30h</div><div class="stat-l">Estudo total</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red)">15/06</div><div class="stat-l">Prazo final</div></div>
+  </div>
+
+  <div class="prog-section">
+    <div class="prog-title">Linha do tempo</div>
+    <div class="prog-track"><div class="prog-fill-bar" style="width:3%"></div></div>
+    <div class="prog-markers">
+      <div class="marker today">Hoje<br>04/mai</div>
+      <div class="marker">Build 1<br>16/mai</div>
+      <div class="marker">MVP<br>23/mai</div>
+      <div class="marker">Build 2<br>30/mai</div>
+      <div class="marker">49 instr.<br>06/jun</div>
+      <div class="marker">Polimento<br>13/jun</div>
+      <div class="marker" style="color:var(--red)">ENTREGA<br>15/jun</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#1e3a5f"></div>Estudo (2h · Seg/Ter 14h10)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#0f2d1a"></div>Build / Implementação (Sábados)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#2e2000"></div>Entrega interna / MVP</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#3d1010"></div>Prazo final</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- S1 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 1</div><div class="week-dates">04–10 mai</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo</span><span class="card-date">Seg 05 · 14h10–16h30 &nbsp;|&nbsp; Ter 06 · 14h10–16h30</span></div>
+          <div class="card-title">VBA Fundamentos</div>
+          <div class="card-desc">Sub/Function, variáveis, loops, Range/Cells, MsgBox, On Error GoTo. Exercício: macro PE-BT-01 de B2→C2.</div>
+          <div class="tags"><span class="tag">Excel Macro Mastery</span><span class="tag">Hashtag PT-BR</span><span class="tag">~4h total</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 2</div><div class="week-dates">11–17 mai</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo</span><span class="card-date">Seg 12 · 14h10–16h30 &nbsp;|&nbsp; Ter 14 · 14h10–16h30</span></div>
+          <div class="card-title">Tabelas Estruturadas + Proteção de Abas</div>
+          <div class="card-desc">ListObjects (Ctrl+T), Named Ranges, VLookup no código, Sheet.Protect/Unprotect, lastRow.</div>
+          <div class="tags"><span class="tag">ListObjects</span><span class="tag">Named Ranges</span><span class="tag">~4h total</span></div>
+        </div>
+        <div class="card card-build" style="margin-top:8px">
+          <div class="card-header"><span class="card-type ct-build">Build</span><span class="card-date">Sáb 16 · dia livre (sem estágio/aula)</span></div>
+          <div class="card-title">🔨 Entrega 1 — Estrutura base da planilha</div>
+          <div class="card-desc">Criar abas CONFIG, BANCO_DADOS, LANÇAMENTO, RESUMO. Popular CONFIG com os 49 instrumentos. Proteção aplicada.</div>
+          <div class="c-checklist">
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Aba CONFIG: 49 instrumentos com CF, TCF, cotas, ângulos, limites</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>TBL_BANCO estruturada: Data, Instrumento, Leitura Bruta, Valor, Status</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Todas as abas de cálculo protegidas com senha</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 3</div><div class="week-dates">18–24 mai</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo</span><span class="card-date">Seg 19 · 14h10–16h30 &nbsp;|&nbsp; Ter 20 · 14h10–16h30</span></div>
+          <div class="card-title">UserForms — Pop-up de Lançamento</div>
+          <div class="card-desc">Insert UserForm, Toolbox completo, eventos Initialize e Click, IsNumeric(), lógica de dupla confirmação em Atenção/Alerta.</div>
+          <div class="tags"><span class="tag">WiseOwlTutorials UserForms</span><span class="tag">~4h total</span></div>
+        </div>
+        <div class="card card-milestone" style="margin-top:8px">
+          <div class="card-header"><span class="card-type ct-milestone">MVP</span><span class="card-date">Sáb 23 · dia livre</span></div>
+          <div class="card-title">🔨 Entrega 2 — MVP: 1 instrumento funcionando 100%</div>
+          <div class="card-desc">UserForm de lançamento para PE-BT-01 completo, validado com dados reais do CBAPE_25.</div>
+          <div class="c-checklist">
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>ComboBox + TextBox com validação IsNumeric()</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Conversão automática PE-BT (CF e TCF da CONFIG)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Gravação na TBL_BANCO com desproteger/reproteger invisível</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Feedback Normal / Atenção / Alerta + dupla confirmação</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 4</div><div class="week-dates">25–31 mai</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo</span><span class="card-date">Seg 25 · 14h10 &nbsp;|&nbsp; Ter 26 · 14h10 &nbsp;|&nbsp; Sex 29 · 14h50–18h</span></div>
+          <div class="card-title">Gráficos Dinâmicos + Login (Workbook_Open)</div>
+          <div class="card-desc">Gráfico de linha + linhas de controle via SeriesCollection, Worksheet_Change, Application.EnableEvents. UserForm de login com perfis e log de acesso.</div>
+          <div class="tags"><span class="tag">Chart.SeriesCollection</span><span class="tag">Worksheet_Change</span><span class="tag">~6h total</span></div>
+        </div>
+        <div class="card card-build" style="margin-top:8px">
+          <div class="card-header"><span class="card-type ct-build">Build</span><span class="card-date">Sáb 30 · dia livre</span></div>
+          <div class="card-title">🔨 Entrega 3 — Gráficos automáticos + Login</div>
+          <div class="c-checklist">
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Gráfico PE-BT-01 com linhas de atenção/alerta automáticas</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Atualização ao gravar nova leitura (Worksheet_Change)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Login funcional com log de acesso (usuário + data/hora)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Fluxo completo: abrir → login → lançar → gráfico atualiza</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 5</div><div class="week-dates">01–07 jun</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo</span><span class="card-date">Sex 05 · 14h50–18h</span></div>
+          <div class="card-title">Preparar expansão para 49 instrumentos</div>
+          <div class="card-desc">Escrever as 4 funções de conversão (ConverterPE, ConverterPZ, ConverterPMV, ConverterRecalque) e testar cada uma individualmente antes do BUILD.</div>
+        </div>
+        <div class="card card-build" style="margin-top:8px">
+          <div class="card-header"><span class="card-type ct-build">Build</span><span class="card-date">Sáb 06 · dia completo</span></div>
+          <div class="card-title">🔨 Entrega 4 — Expansão para TODOS os 49 instrumentos</div>
+          <div class="card-desc">Dia mais pesado do projeto. Expandir tudo de 1 para 49.</div>
+          <div class="c-checklist">
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>CONFIG completa: PE-BT(6), PZ-BT(32), PMV(6), MRS, MM-BT, TS</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Funções ConverterPE(), ConverterPZ(), ConverterPMV() no módulo VBA</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Gráficos agrupados por seção (MD, ME, Leito do Rio, Vertedouro)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Gráfico didático de barras de nível d'água</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--green)"></div>Testes de aceitação com dados reais do CBAPE_25</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6 -->
+    <div class="week">
+      <div class="week-left"><div class="week-label">Semana 6</div><div class="week-dates">08–15 jun</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-line"></div></div>
+      <div class="week-right">
+        <div class="card card-study">
+          <div class="card-header"><span class="card-type ct-study">Estudo / Build</span><span class="card-date">Seg 09 · 14h10 &nbsp;|&nbsp; Sex 12 · 14h50–18h</span></div>
+          <div class="card-title">Testes de aceitação + Polimento da interface</div>
+          <div class="card-desc">Seg: simular leiturista com 10 leituras reais, verificar proteção, ajustar bugs. Sex: cores e mensagens amigáveis, dashboard de resumo, mini-manual dentro da planilha.</div>
+        </div>
+        <div class="card card-build" style="margin-top:8px">
+          <div class="card-header"><span class="card-type ct-build">Build</span><span class="card-date">Sáb 13 · dia livre (2 dias antes do prazo)</span></div>
+          <div class="card-title">🔨 Entrega 5 — Polimento final + documentação</div>
+          <div class="card-desc">Arquivo .xlsm finalizado e testado em máquina limpa. Pronto para envio.</div>
+          <div class="c-checklist">
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Interface polida: cores, mensagens claras e amigáveis</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Dashboard visual de resumo por seção</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Mini-manual de uso (1 página) embutido na planilha</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Comentários no código VBA e aba oculta de versão</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--amber)"></div>Testado em máquina sem Excel configurado (simulação do cliente)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEADLINE -->
+    <div class="week last-week">
+      <div class="week-left"><div class="week-label" style="color:var(--red)">Deadline</div><div class="week-dates" style="color:var(--red)">15 jun</div></div>
+      <div class="week-center"><div class="tl-dot" style="background:var(--red);box-shadow:0 0 10px var(--red)"></div><div class="tl-line" style="display:none"></div></div>
+      <div class="week-right">
+        <div class="card card-deadline">
+          <div class="card-header"><span class="card-type ct-deadline">Entrega Final</span><span class="card-date">Dom 15 jun · 09:00</span></div>
+          <div class="card-title">✅ Sistema de Instrumentação UHE Corumbá III — Fase 1</div>
+          <div class="card-desc">Envio ao cliente: Neoenergia O&amp;M — Corumbá III</div>
+          <div class="c-checklist" style="margin-top:10px">
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>LOGIN funcionando (leiturista + engenheiro)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Pop-up para todos os 49 instrumentos</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Conversão automática validada (PE-BT, PZ-BT, PMV, recalque)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Dupla confirmação em Atenção/Alerta</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>3 tipos de gráfico (individual, agrupado, didático)</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Banco de dados estruturado e protegido</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Proteção total contra edição pelo leiturista</div>
+            <div class="c-check"><div class="c-dot" style="background:var(--red)"></div>Mini-manual de uso incluído</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /timeline -->
+</div><!-- /inner -->
+</div><!-- /page-cronograma -->
+
+<!-- ═══════════════════════════════════════════════
+     ABA 3 — GRÁFICOS
+     ═══════════════════════════════════════════════ -->
+<div class="page" id="page-graficos">
+<div class="inner">
+
+  <div class="eyebrow">UHE Corumbá III — Sistema de Instrumentação</div>
+  <h1>Gráficos <span>Fase 1</span></h1>
+  <div class="page-sub">Evolução do projeto · Distribuição de entregas</div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--green)" id="kpi-dias-passados">1</div>
+      <div class="kpi-l">Dias decorridos</div>
+      <div class="kpi-delta delta-ok" id="kpi-pct-tempo">2% do prazo</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--amber)" id="kpi-dias-restantes">41</div>
+      <div class="kpi-l">Dias restantes</div>
+      <div class="kpi-delta delta-warn">Prazo: 15/06/2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--blue)" id="kpi-cl-done">0</div>
+      <div class="kpi-l">Itens concluídos</div>
+      <div class="kpi-delta delta-ok" id="kpi-cl-pct2">do checklist</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--purple)">5</div>
+      <div class="kpi-l">Entregas internas</div>
+      <div class="kpi-delta delta-warn">0 entregues</div>
+    </div>
+  </div>
+
+  <!-- Gráfico 1 — Evolução (wide) -->
+  <div class="chart-card-wide">
+    <div class="chart-title">Evolução do Projeto — Horas de estudo acumuladas vs. meta</div>
+    <div class="chart-sub">Semanas 1–6 · Meta: ~30h totais · Build nos sábados</div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
+    <div class="chart-legend">
+      <div class="leg"><div class="leg-ln" style="background:var(--green)"></div>Horas estudadas (acumulado)</div>
+      <div class="leg"><div class="leg-ln" style="background:var(--blue);opacity:.5;border:1px dashed #60a5fa"></div>Meta ideal (acumulado)</div>
+      <div class="leg"><div class="leg-sq" style="background:#0d2a16;border:1px solid #0f3a1e"></div>Sábados de Build</div>
+    </div>
+  </div>
+
+  <!-- Gráficos 2+3 — side by side -->
+  <div class="charts-grid">
+
+    <!-- Gráfico 2 — Entregas -->
+    <div class="chart-card">
+      <div class="chart-title">Status das Entregas Internas</div>
+      <div class="chart-sub">5 marcos · deadline 15/06</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="chartEntregas"></canvas>
+      </div>
+      <div class="chart-legend" style="margin-top:14px">
+        <div class="leg"><div class="leg-sq" style="background:#0d2a16;border:1px solid var(--green)"></div>Concluída</div>
+        <div class="leg"><div class="leg-sq" style="background:#0d1e38;border:1px solid var(--blue)"></div>Em progresso</div>
+        <div class="leg"><div class="leg-sq" style="background:#1a1a1a;border:1px solid var(--border2)"></div>Pendente</div>
+      </div>
+    </div>
+
+    <!-- Gráfico 3 — Distribuição de horas -->
+    <div class="chart-card">
+      <div class="chart-title">Distribuição de Horas por Bloco</div>
+      <div class="chart-sub">~30h totais estimadas</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="chartHoras"></canvas>
+      </div>
+      <div class="chart-legend" style="margin-top:14px">
+        <div class="leg"><div class="leg-sq" style="background:#166534"></div>VBA (~25h)</div>
+        <div class="leg"><div class="leg-sq" style="background:#1e3a8a"></div>Excel (~10h)</div>
+        <div class="leg"><div class="leg-sq" style="background:#78350f"></div>Lógica/Fluxo (~3h)</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════
+   PERSISTÊNCIA — salva/carrega estado do checklist
+   ══════════════════════════════════════════════ */
+const STORAGE_KEY = 'corumba3_checklist_v1';
+
+function saveChecklist() {
+  try {
+    const items = document.querySelectorAll('#sub-checklist .cl-item');
+    const state = Array.from(items).map(el => el.querySelector('.cl-cb').classList.contains('done'));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadChecklist() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    const items = document.querySelectorAll('#sub-checklist .cl-item');
+    items.forEach((el, i) => {
+      if (!state[i]) return;
+      el.querySelector('.cl-cb').classList.add('done');
+      el.querySelector('.cl-text').classList.add('done');
+    });
+  } catch(e) {}
+}
+
+/* ── Tab principal ── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'graficos') { tryInitCharts(); }
+}
+
+/* ── Sub-painel da trilha ── */
+function showSub(id, btn) {
+  document.querySelectorAll('.subpanel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.inner-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('sub-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('.inner-btn').forEach(b => {
+      const oc = b.getAttribute('onclick') || '';
+      if (oc.includes("'" + id + "'")) b.classList.add('active');
+    });
+  }
+}
+
+/* ── Checklist ── */
+function toggleCl(el) {
+  const cb  = el.querySelector('.cl-cb');
+  const txt = el.querySelector('.cl-text');
+  const done = cb.classList.toggle('done');
+  txt.classList.toggle('done', done);
+  saveChecklist();
+  updateAll();
+}
+
+/* ── Mapeamento: grupo do checklist → índice da barra de entrega ── */
+// Grupos (cl-group-title em ordem): 0=VBA Fund, 1=UserForms, 2=Eventos, 3=Excel, 4=Entregas
+// Entrega 0 (Sáb 16) = grupos VBA Fund + Excel (itens de estrutura)
+// Entrega 1 (Sáb 23) = grupo UserForms
+// Entrega 2 (Sáb 30) = grupo Eventos (gráficos + login)
+// Entrega 3 (Sáb 06) = todos os grupos (expansão 49 instr) — peso no geral
+// Entrega 4 (Sáb 13) = grupo Entregas/Marcos
+const GRUPOS = ['VBA — FUNDAMENTOS','VBA — USERFORMS (FOCO MÁXIMO)','VBA — EVENTOS E PROTEÇÃO','EXCEL — ESTRUTURA E GRÁFICOS','ENTREGAS / MARCOS'];
+const GRUPO_PARA_ENTREGA = [0, 1, 2, 0, 4]; // grupo i → índice da barra
+
+function calcProgressoPorGrupo() {
+  const sections = document.querySelectorAll('#sub-checklist .checklist-section');
+  const result = [];
+  sections.forEach(sec => {
+    const items = sec.querySelectorAll('.cl-item');
+    const done  = sec.querySelectorAll('.cl-cb.done').length;
+    result.push(items.length ? Math.round(done / items.length * 100) : 0);
+  });
+  return result; // [pct_grupo0, pct_grupo1, ...]
+}
+
+function calcProgressoEntregas(grupoPct) {
+  // Entrega 0: média de VBA Fund (0) + Excel (3)
+  const e0 = Math.round((grupoPct[0] + grupoPct[3]) / 2);
+  // Entrega 1: UserForms (1)
+  const e1 = grupoPct[1];
+  // Entrega 2: Eventos (2)
+  const e2 = grupoPct[2];
+  // Entrega 3: média geral dos 4 grupos técnicos
+  const e3 = Math.round((grupoPct[0]+grupoPct[1]+grupoPct[2]+grupoPct[3]) / 4);
+  // Entrega 4: Entregas/Marcos (4)
+  const e4 = grupoPct[4];
+  return [e0, e1, e2, e3, e4];
+}
+
+function calcHorasEstudadas(grupoPct) {
+  // Distribui horas proporcionalmente ao progresso de cada grupo
+  // Total estimado por semana: ~4h, ~8h, ~5h, ~6h, ~4h, ~3h (acumulado)
+  const metaAcum = [4, 9, 14, 20, 25, 28, 30];
+  const totalGrupos = grupoPct[0]+grupoPct[1]+grupoPct[2]+grupoPct[3]+grupoPct[4];
+  const pctGeral = totalGrupos / 500; // 5 grupos × 100%
+  // Distribui ao longo das 7 semanas
+  return metaAcum.map((m, i) => {
+    const frac = (i + 1) / 7;
+    return Math.round(m * Math.min(pctGeral / frac, 1) * 10) / 10;
+  });
+}
+
+/* ── Instâncias globais dos charts ── */
+let chartEv = null, chartEnt = null, chartHr = null;
+let chartsInited = false;
+
+function getBarColor(v) {
+  if (v >= 100) return 'rgba(34,197,94,0.8)';
+  if (v >  0)   return 'rgba(96,165,250,0.65)';
+  return 'rgba(42,42,42,0.9)';
+}
+function getBarBorder(v) {
+  if (v >= 100) return '#22c55e';
+  if (v >  0)   return '#60a5fa';
+  return '#2e2e2e';
+}
+
+function updateAll() {
+  const allItems = document.querySelectorAll('#sub-checklist .cl-item').length;
+  const doneItems = document.querySelectorAll('#sub-checklist .cl-cb.done').length;
+  const pct = allItems ? Math.round(doneItems / allItems * 100) : 0;
+
+  // Checklist progress bar
+  const pctEl = document.getElementById('cl-pct');
+  const barEl = document.getElementById('cl-bar');
+  if (pctEl) pctEl.textContent = doneItems + ' / ' + allItems + ' itens (' + pct + '%)';
+  if (barEl) barEl.style.width = pct + '%';
+
+  // KPIs
+  const kpiDone = document.getElementById('kpi-cl-done');
+  const kpiPct  = document.getElementById('kpi-cl-pct2');
+  if (kpiDone) kpiDone.textContent = doneItems;
+  if (kpiPct)  kpiPct.textContent  = pct + '% do checklist';
+
+  // Atualiza gráficos se já iniciados
+  if (!chartsInited) return;
+
+  const grupoPct   = calcProgressoPorGrupo();
+  const entPct     = calcProgressoEntregas(grupoPct);
+  const horasAcum  = calcHorasEstudadas(grupoPct);
+
+  // Gráfico de evolução — atualiza série real
+  if (chartEv) {
+    chartEv.data.datasets[1].data = horasAcum;
+    chartEv.update('active');
+  }
+
+  // Gráfico de entregas — atualiza dados e cores
+  if (chartEnt) {
+    chartEnt.data.datasets[0].data            = entPct;
+    chartEnt.data.datasets[0].backgroundColor = entPct.map(getBarColor);
+    chartEnt.data.datasets[0].borderColor     = entPct.map(getBarBorder);
+    chartEnt.update('active');
+  }
+}
+
+function tryInitCharts(attempt) {
+  attempt = attempt || 0;
+  if (typeof Chart === 'undefined') {
+    if (attempt < 20) setTimeout(() => tryInitCharts(attempt + 1), 150);
+    return;
+  }
+  if (chartsInited) { updateAll(); return; }
+  initCharts();
+}
+
+function initCharts() {
+  if (chartsInited) { updateAll(); return; }
+  chartsInited = true;
+
+  Chart.defaults.color = '#777';
+  Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+  Chart.defaults.font.size = 11;
+
+  const gridColor = 'rgba(255,255,255,0.05)';
+  const tick = { color:'#555', font:{ size:10 } };
+
+  const semanas  = ['S1\n05/mai','S2\n12/mai','S3\n19/mai','S4\n26/mai','S5\n02/jun','S6\n09/jun','15/jun'];
+  const metaAcum = [4, 9, 14, 20, 25, 28, 30];
+  const isBuild  = [false, true, true, true, true, true, false];
+
+  const grupoPct  = calcProgressoPorGrupo();
+  const entPct    = calcProgressoEntregas(grupoPct);
+  const horasAcum = calcHorasEstudadas(grupoPct);
+
+  /* ── Build-background plugin ── */
+  const buildBg = {
+    id: 'buildBg',
+    beforeDraw(chart) {
+      const { ctx, chartArea:{ top, bottom }, scales:{ x } } = chart;
+      if (!x) return;
+      isBuild.forEach((b, i) => {
+        if (!b) return;
+        const xPos = x.getPixelForValue(i);
+        const w = x.width / (semanas.length - 1);
+        ctx.save();
+        ctx.fillStyle = 'rgba(13,42,22,0.45)';
+        ctx.fillRect(xPos - w/2, top, w, bottom - top);
+        ctx.restore();
+      });
+    }
+  };
+
+  /* ── Gráfico 1 — Evolução ── */
+  chartEv = new Chart(document.getElementById('chartEvolucao').getContext('2d'), {
+    type: 'line',
+    plugins: [buildBg],
+    data: {
+      labels: semanas,
+      datasets: [
+        {
+          label: 'Meta ideal',
+          data: metaAcum,
+          borderColor: 'rgba(96,165,250,0.45)',
+          borderDash: [5,4],
+          borderWidth: 1.5,
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(96,165,250,0.35)',
+          fill: false,
+          tension: 0.35,
+        },
+        {
+          label: 'Horas estudadas',
+          data: horasAcum,
+          borderColor: '#22c55e',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: '#22c55e',
+          pointBorderColor: '#0c0c0c',
+          pointBorderWidth: 2,
+          fill: { target:'origin', above:'rgba(34,197,94,0.07)' },
+          tension: 0.35,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor:'#1a1a1a', borderColor:'#2e2e2e', borderWidth:1,
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y}h` }
+        }
+      },
+      scales: {
+        x: { grid:{ color:gridColor }, ticks:{ ...tick, maxRotation:0 } },
+        y: {
+          grid:{ color:gridColor }, ticks:{ ...tick, callback: v=>v+'h' },
+          min:0, max:32,
+          title:{ display:true, text:'Horas acumuladas', color:'#444', font:{size:10} }
+        }
+      }
+    }
+  });
+
+  /* ── Gráfico 2 — Entregas ── */
+  chartEnt = new Chart(document.getElementById('chartEntregas').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: [
+        'Estrutura base (16/mai)',
+        'MVP 1 instr. (23/mai)',
+        'Gráficos+Login (30/mai)',
+        '49 instrumentos (06/jun)',
+        'Polimento final (13/jun)',
+      ],
+      datasets: [{
+        label: 'Progresso (%)',
+        data: entPct,
+        backgroundColor: entPct.map(getBarColor),
+        borderColor:     entPct.map(getBarBorder),
+        borderWidth: 1,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor:'#1a1a1a', borderColor:'#2e2e2e', borderWidth:1,
+          callbacks: { label: c => ` ${c.parsed.x}% concluído` }
+        }
+      },
+      scales: {
+        x: {
+          grid:{ color:gridColor }, ticks:{ ...tick, callback: v=>v+'%' },
+          min:0, max:100,
+        },
+        y: { grid:{ display:false }, ticks:{ color:'#555', font:{size:10} } }
+      }
+    }
+  });
+
+  /* ── Gráfico 3 — Donut horas ── */
+  chartHr = new Chart(document.getElementById('chartHoras').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['VBA & UserForms', 'Excel avançado', 'Lógica & Fluxo'],
+      datasets: [{
+        data: [25, 10, 3],
+        backgroundColor: ['rgba(34,197,94,0.75)','rgba(96,165,250,0.7)','rgba(251,191,36,0.7)'],
+        borderColor: ['#22c55e','#60a5fa','#fbbf24'],
+        borderWidth: 1.5,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor:'#1a1a1a', borderColor:'#2e2e2e', borderWidth:1,
+          callbacks: { label: c => ` ${c.label}: ${c.parsed}h` }
+        }
+      }
+    },
+    plugins: [{
+      id: 'centerText',
+      beforeDraw(chart) {
+        const { ctx, chartArea:{ left,top,width,height } } = chart;
+        ctx.save();
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const cx = left+width/2, cy = top+height/2;
+        ctx.font = 'bold 22px IBM Plex Mono';
+        ctx.fillStyle = '#ebe9e2';
+        ctx.fillText('38h', cx, cy-8);
+        ctx.font = '10px IBM Plex Mono';
+        ctx.fillStyle = '#777';
+        ctx.fillText('estimadas', cx, cy+10);
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+/* ── KPIs de dias (roda imediatamente) ── */
+(function() {
+  const inicio    = new Date('2026-05-04');
+  const prazo     = new Date('2026-06-15');
+  const hoje      = new Date();
+  const total     = Math.round((prazo - inicio) / 86400000);
+  const passados  = Math.max(1, Math.round((hoje - inicio) / 86400000));
+  const restantes = Math.max(0, Math.round((prazo - hoje) / 86400000));
+  const pct       = Math.min(100, Math.round(passados / total * 100));
+  const p = document.getElementById('kpi-dias-passados');
+  const t = document.getElementById('kpi-pct-tempo');
+  const r = document.getElementById('kpi-dias-restantes');
+  if(p) p.textContent = passados;
+  if(t) t.textContent = pct + '% do prazo';
+  if(r) r.textContent = restantes;
+})();
+
+/* ── Inicialização ── */
+loadChecklist();   // restaura marcações salvas
+updateAll();       // atualiza barra + KPIs com estado carregado
+</script>
+</body>
+</html>
